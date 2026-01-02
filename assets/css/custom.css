@@ -6,7 +6,7 @@ h1, h2 {
     text-align: center;
 }
 
-#contenido {
+#content {
     margin-top: 40px;
 }
 
@@ -20,8 +20,8 @@ h1, h2 {
     cursor: pointer;
     font-weight: bold;
 }
-.borrar-tweet,
-.borrar-tweet:hover {
+.delete-task,
+.delete-task:hover {
     float: right;
     cursor: pointer;
     font-weight: bold;
@@ -30,6 +30,10 @@ h1, h2 {
 .swal-button {
     padding: 0 2.4rem;
     color: white!important;
+}
+
+.swal-button--cancel {
+    background-color: #191919!important;
 }
 
 .swal-overlay {
@@ -62,12 +66,25 @@ p.center {
 }
 
 li {
-    border: 1px solid #191919;
+    border: 1px solid color-mix(in oklab,oklch(0.62 0.21 259.24)32%,transparent);
     padding: 0.5rem;
     list-style: none;
-    
+    background-color: color-mix(in oklab,oklch(0.62 0.21 259.24)4%,transparent);
+    border-radius: 4px;
+    padding: 8px;
 }
+
 
 input[type="text"] {
     background-color: transparent!important;
+}
+
+.emoji-wysiwyg-editor {
+    padding: 9px !important;
+}
+
+@media (prefers-color-scheme: dark) {
+    li {
+        background-color: color-mix(in oklab,lab(54.1736% 13.3369 -74.6839)4%,transparent);
+    }
 }

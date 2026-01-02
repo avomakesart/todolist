@@ -1,167 +1,185 @@
-// Variables
-const tweetList = document.getElementById('lista-tweets');
-
-
+const taskList = document.getElementById("task-list");
 
 // Event Listeners
-
 eventListeners();
 
 function eventListeners() {
-     //Cuando se envia el formulario
-     document.querySelector('#formulario').addEventListener('submit', addTweet);
-
-     // Borrar Tweets
-     tweetList.addEventListener('click', eraseTweet);
-
-     // Contenido cargado
-     document.addEventListener('DOMContentLoaded', localStorageDone);
+  // Handle the form submission
+  document.querySelector("#form").addEventListener("submit", addTask);
+  // Handle Enter key on task input
+  document.querySelector("#form").addEventListener("keypress", function (e) {
+    if (e.key === "Enter") {
+      addTask(e);
+    }
+  });
+  // Delete task
+  taskList.addEventListener("click", deleteTask);
+  // Content loaded
+  document.addEventListener("DOMContentLoaded", localStorageDone);
 }
 
+// Add task to the form
+function addTask(e) {
+  e.preventDefault();
+  const taskList = document.getElementById("task-list");
+  const task = document.getElementById("task").value;
+  const emoji = document.getElementsByClassName("emoji-items").value;
+  const eraseButton = document.createElement("a");
+  eraseButton.classList = "delete-task";
+  eraseButton.innerText = "❌";
 
+  if (task.length === 0) {
+    return swal({
+      title: "⚠️",
+      text: "You must write a task!",
+      icon: "warning",
+      button: "Oh no!",
+    });
+  }
 
-// Funciones
+  const existingTasks = getTasksFromLocalStorage();
+  if (existingTasks.includes(task)) {
+    return swal({
+      title: "⚠️",
+      text: "This task already exists!",
+      icon: "warning",
+      button: "Oh no!",
+    });
+  }
 
+  const li = document.createElement("li");
+  li.innerText = task;
 
-// Añadir tweet del formulario
-function addTweet(e) {
-     e.preventDefault();
-     // leer el valor del textarea
-     const tweet = document.getElementById('tweet').value;
-     const emoji = document.getElementsByClassName('emoji-items').value;
-     // crear boton de eliminar
-     const eraseButton = document.createElement('a');
-     eraseButton.classList = 'borrar-tweet';
-     eraseButton.innerText = '❌';
+  li.appendChild(eraseButton);
 
-     // Crear elemento y añadirle el contenido a la lista
-     const li = document.createElement('li');
-     li.innerText = tweet;
+  taskList.appendChild(li);
+  const input = document.getElementsByClassName("emoji-wysiwyg-editor")[0];
+  input.innerHTML = "";
+  document.getElementById("task").value = "";
 
-     // añade el botón de borrar al tweet
-     li.appendChild(eraseButton);
+  addTaskToLocalStorage(task, emoji);
 
-     // añade el tweet a la lista
-     tweetList.appendChild(li);
-
-     // Añadir a Local Storage
-     addTweetLocalStorage(tweet, emoji);
-
-     swal({
-          title: "🎉!",
-          text: "Your task has been added!",
+  swal({
+    title: "🎉!",
+    text: "Your task has been added!",
+    icon: "success",
+    button: "Oh yeah!",
+  });
+}
+// Remove tasks from the list
+function deleteTask(e) {
+  e.preventDefault();
+  swal({
+    title: "Are you sure?",
+    text: "Once deleted, you will not be able to recover you task!",
+    icon: "warning",
+    buttons: true,
+    dangerMode: true,
+  }).then((willDelete) => {
+    if (willDelete) {
+      if ((e.target.className === "delete-task", "decoration")) {
+        e.target.parentElement.remove();
+        deleteTaskFromLocalStorage(e.target.parentElement.innerText);
+        swal("Poof! Your task has been deleted!", {
           icon: "success",
-          button: "Oh yeah!",
         });
+      }
+    } else {
+      swal("Your task is safe!", {
+        icon: "info",
+      });
+    }
+  });
 }
-// Elimina el Tweet del DOM
-function eraseTweet(e) {
-     e.preventDefault();
-     swal({
-          title: "Are you sure?",
-          text: "Once deleted, you will not be able to recover you task!",
-          icon: "warning",
-          buttons: true,
-          dangerMode: true,
-        })
-        .then((willDelete) => {
-          if (willDelete) { 
-               if(e.target.className === 'borrar-tweet', 'decoration') {
-                    e.target.parentElement.remove();
-                    eraseTweetLocalStorage(e.target.parentElement.innerText);
-            swal("Poof! Your task has been deleted!", {
-              icon: "success",
-            });
-          }
-          } else {
-            swal("Your task is safe!", {
-                 icon: "info",
-            });
-          }
-        });
-     
-}
-
 
 // Mostrar datos de LocalStorage en la lista
 function localStorageDone() {
-     let tweets, emojis;
+  let tasks, emojis;
 
-     tweets = getTweetsLocalStorage();
+  tasks = getTasksFromLocalStorage();
 
-     emojis = getTweetsLocalStorage();
+  emojis = getTasksFromLocalStorage();
 
-     tweets.forEach(function(tweet, emoji) {
-          // crear boton de eliminar
-          const eraseButton = document.createElement('a');
-          eraseButton.classList = 'borrar-tweet';
-          eraseButton.innerText = '❌';
-
-          // Crear elemento y añadirle el contenido a la lista
-          const li = document.createElement('li');
-          li.innerText = tweet;
-          
-          // añade el botón de borrar al tweet
-          li.appendChild(eraseButton);
-
-          // añade el tweet a la lista
-          tweetList.appendChild(li);
-     });
+  tasks.forEach(function (task, emoji) {
+    const eraseButton = document.createElement("a");
+    eraseButton.classList = "delete-task";
+    eraseButton.innerText = "❌";
+    const li = document.createElement("li");
+    li.innerText = task;
+    li.appendChild(eraseButton);
+    taskList.appendChild(li);
+  });
 }
 
-// Agrega tweet a local storage
-function addTweetLocalStorage(tweet, emoji) {
-     let tweets;
-     tweets = getTweetsLocalStorage();
-     // Añadir el nuevo tweet
-     tweets.push(tweet);
-     // Convertir de string a arreglo para local storage
-     localStorage.setItem('tweets', JSON.stringify(tweets) );
+// Local torage functions
+function addTaskToLocalStorage(task, emoji) {
+  let tasks;
+  tasks = getTasksFromLocalStorage();
+  // Añadir el nuevo task
+  tasks.push(task);
+  // Convertir de string a arreglo para local storage
+  localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
-// Comprobar que haya elementos en localstorage, retorna un arreglo
-function getTweetsLocalStorage() {
-     let tweets;
-     // Revisamos los valoes de local storage
-     if(localStorage.getItem('tweets') === null) {
-          tweets = []; 
-     } else {
-          tweets = JSON.parse(localStorage.getItem('tweets') );
-     }
-     return tweets;
+function getTasksFromLocalStorage() {
+  let tasks;
+  if (localStorage.getItem("tasks") === null) {
+    tasks = [];
+  } else {
+    tasks = JSON.parse(localStorage.getItem("tasks"));
+  }
+  return tasks;
 }
 
-// Eliminar tweet de Local Storage
-
-function eraseTweetLocalStorage(tweet, emoji) {
-
-     let tweets, tweetErase;
-     // Elimina la X del tweet
-     tweetErase = tweet.substring(0, tweet.length - 1);
-
-     tweets = getTweetsLocalStorage();
-
-     tweets.forEach(function(tweet, emoji, index) {
-          if(tweetErase === tweet) {
-               tweets.splice(index, 1);
-          }
-     }) ;
-
-     localStorage.setItem('tweets', JSON.stringify(tweets) );
+function addThemeToLocalStorage(theme) {
+  localStorage.setItem("theme", theme);
 }
 
+function getThemeFromLocalStorage() {
+  return localStorage.getItem("theme");
+}
 
-// Buttons
+// Delete a task from local storage
+function deleteTaskFromLocalStorage(task, emoji) {
+  let tasks, taskErase;
+  // Removes the ❌ from the task
+  taskErase = task.substring(0, task.length - 1);
+
+  tasks = getTasksFromLocalStorage();
+
+  tasks.forEach(function (task, emoji, index) {
+    if (taskErase === task) {
+      tasks.splice(index, 1);
+    }
+  });
+
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+
+// Theme functions
 function white() {
-     document.body.style.backgroundColor = "white";
-     document.body.style.color = "black";
-     document.querySelector('.emoji-picker-icon').style.color = "black";
-   }
+  document.body.style.backgroundColor = "white";
+  document.body.style.color = "black";
+  document.querySelector(".emoji-picker-icon").style.color = "black";
+  addThemeToLocalStorage("white");
+}
 
 function black() {
-     document.body.style.backgroundColor = "#191919";
-     document.body.style.color = "white";
-     document.querySelector('.emoji-picker-icon').style.color = "white";
-     document.getElementsByName('text').style.border = "white";
-   }
+  document.body.style.backgroundColor = "#191919";
+  document.body.style.color = "white";
+  document.querySelector(".emoji-picker-icon").style.color = "white";
+  addThemeToLocalStorage("black");
+  document.getElementsByName("text").style.border = "white";
+}
 
+function checkTheme() {
+  const theme = getThemeFromLocalStorage();
+  if (theme === "black") {
+    black();
+  } else {
+    white();
+  }
+}
+
+// On load
+checkTheme();

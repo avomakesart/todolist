@@ -10,7 +10,7 @@
 	 * @global
 	 * @namespace
 	 */
-
+a
 	var emoji = function(){
 
 		var self = this;
